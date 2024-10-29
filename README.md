@@ -1,158 +1,136 @@
-## 엔드포인트
+# 설명
+OpenAI API를 이용하여 워드프레스의 Candy AI Writer 플러그인을 위한 API 서버입니다.
+API 키별 크레딧 관리, 도메인 관리, 구독 상태 관리 등을 구현하였습니다.
 
-1. /complete
-2. /enhance
-3. /create
-4. /is_subscribed
-5. /get_domain_list
-6. /get_credits
-7. /admin/generate_api_key
-8. /admin/extend_api_key
-9. /admin/delete_api_key
-10. /admin/set_max_domain_count
-11. /admin/add_domain
-12. /admin/delete_domain
-13. /admin/set_subscribed
+크레딧이 부족하거나 구독이 만료되면 API 요청을 거부하며, 추후 관리 웹사이트를 통해 크레딧 충전, 도메인 추가, 구독 연장 등을 할 수 있게 구현할 예정이고, 유저가 결제를 통해 크레딧을 충전할 수 있도록 할 예정입니다.
 
----
 
-## 상세 설명
+# 설치 및 실행 가이드
+### 설치
+```
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+chmod +x ./*.sh
+deactivate
+```
 
-### 1. /complete
+### 실행
+```
+./start.sh
+```
 
-- 메소드: POST
-- 설명: 주어진 프롬프트에 대한 완성 결과를 스트리밍으로 반환합니다.
-- 요청 데이터: OpenAiRequestData
-    - api_key (str): API 키
-    - reference (str): 참조 문자열
-    - prompt (str): 프롬프트 문자열
-- 응답: 스트리밍 컨텐츠
+### 종료
+```
+./stop.sh
+```
 
-### 2. /enhance
+### 로그 확인
+```
+tail -f server.log
+```
 
-- 메소드: POST
-- 설명: 주어진 프롬프트를 향상시킨 텍스트를 반환합니다.
-- 요청 데이터: OpenAiRequestData
-    - api_key (str): API 키
-    - reference (str): 참조 문자열
-    - prompt (str): 프롬프트 문자열
-- 응답
-    - message (str): 향상된 텍스트
 
-### 3. /create
+# API 문서
 
-- 메소드: POST
-- 설명: 주어진 프롬프트에 대해 HTML 형식의 결과를 생성합니다.
-- 요청 데이터: OpenAiRequestData
-    - api_key (str): API 키
-    - reference (str): 참조 문자열
-    - prompt (str): 프롬프트 문자열
-- 응답
-    - message (str): 생성된 HTML 문자열
+### 1. 텍스트 완성 요청
+- POST `/complete`
+  - 설명: 주어진 프롬프트에 따라 텍스트를 완성합니다.
+  - 헤더: `api_key`: (필수) 사용자의 API 키
+  - 바디:
+    - `prompt` (문자열) - (필수) 텍스트 생성에 사용할 프롬프트
+    - `reference` (문자열) - (옵션) 참고할 추가 정보
+  - 응답: 스트리밍된 텍스트 응답
 
-### 4. /is_subscribed
+### 2. 텍스트 개선 요청
+- POST `/enhance`
+  - 설명: 주어진 프롬프트를 개선하여 텍스트를 반환합니다.
+  - 헤더: `api_key`: (필수) 사용자의 API 키
+  - 바디:
+    - `prompt` (문자열) - (필수) 개선할 프롬프트
+  - 응답: 개선된 텍스트
 
-- 메소드: GET
-- 설명: API 키의 구독 상태를 확인합니다.
-- 요청 데이터: RequestData
-    - api_key (str): API 키
-- 응답
-    - message (str): 상태 메세지
-    - subscribed (bool): 구독 상태
+### 3. HTML 생성 요청
+- POST `/create`
+  - 설명: 주어진 프롬프트로부터 HTML을 생성합니다.
+  - 헤더: `api_key`: (필수) 사용자의 API 키
+  - 바디:
+    - `prompt` (문자열) - (필수) HTML 생성을 위한 프롬프트
+  - 응답: 생성된 HTML
 
-### 5. /get_domain_list
+### 4. 구독 상태 확인
+- GET `/is_subscribed`
+  - 설명: 사용자의 구독 상태를 확인합니다.
+  - 헤더: `api_key`: (필수) 사용자의 API 키
+  - 응답: 구독 여부
 
-- 메소드: GET
-- 설명: API 키에 연관된 도메인 리스트를 반환합니다.
-- 요청 데이터: RequestData
-    - api_key (str): API 키
-- 응답
-    - message (str): 상태 메세지
-    - domain_list (list): 도메인 리스트
+### 5. 도메인 리스트 확인
+- GET `/get_domain_list`
+  - 설명: 사용자가 등록한 도메인 리스트를 반환합니다.
+  - 헤더: `api_key`: (필수) 사용자의 API 키
+  - 응답: 도메인 리스트
 
-### 6. /get_credits
+### 6. 크레딧 확인
+- POST `/get_credits`
+  - 설명: 사용 가능한 크레딧을 반환합니다.
+  - 헤더: `api_key`: (필수) 사용자의 API 키
+  - 응답: 사용 가능한 크레딧
 
-- 메소드: POST
-- 설명: API 키에 남아있는 크레딧을 확인합니다.
-- 요청 데이터: RequestData
-    - api_key (str): API 키
-- 응답
-    - message (str): 상태 메세지
-    - credits (int): 남은 크레딧
+### 7. API 키 만료 날짜 확인
+- GET `/get_expiration_date`
+  - 설명: API 키의 만료 날짜를 반환합니다.
+  - 헤더: `api_key`: (필수) 사용자의 API 키
+  - 응답: 만료 날짜
 
-### 7. /admin/generate_api_key
+## 관리자 전용 엔드포인트
 
-- 메소드: POST
-- 설명: 새로운 API 키를 생성합니다.
-- 요청 데이터: GenerateApiKeyData
-    - days (int): 유효 기간 (일)
-    - secret (str): 관리자 비밀번호
-- 응답
-    - api_key (str): 생성된 API 키
-    - expiration_date (str): 만료 날짜
-    - message (str): 상태 메세지
+### 8. API 키 생성
+- POST `/admin/generate_api_key`
+  - 설명: 새로운 API 키를 생성합니다.
+  - 헤더: `secret`: (필수) 관리자 비밀키
+  - 쿼리: `days` (정수) - (필수) API 키의 유효 일수
+  - 응답: 생성된 API 키
 
-### 8. /admin/extend_api_key
+### 9. API 키 연장
+- PUT `/admin/extend_api_key`
+  - 설명: 기존 API 키의 만료 날짜를 연장합니다.
+  - 헤더: `secret`: (필수) 관리자 비밀키
+  - 쿼리:
+    - `days` (정수) - (필수) 연장할 일수
+    - `api_key` (문자열) - (필수) 연장할 API 키
+  - 응답: 성공 메시지
 
-- 메소드: PUT
-- 설명: 기존 API 키의 유효 기간을 연장합니다.
-- 요청 데이터: ExtendApiKeyData
-    - days (int): 연장할 기간 (일)
-    - secret (str): 관리자 비밀번호
-    - api_key (str): 연장할 API 키
-- 응답
-    - message (str): 상태 메세지
+### 10. API 키 삭제
+- DELETE `/admin/delete_api_key`
+  - 설명: API 키를 삭제합니다.
+  - 헤더: `secret`: (필수) 관리자 비밀키
+  - 쿼리: `api_key` (문자열) - (필수) 삭제할 API 키
+  - 응답: 성공 메시지
 
-### 9. /admin/delete_api_key
+### 11. 최대 도메인 개수 설정
+- PUT `/admin/set_max_domain_count`
+  - 설명: API 키에 대한 최대 도메인 개수를 설정합니다.
+  - 헤더: `api_key`, `secret` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
+  - 쿼리: `count` (정수) - (필수) 설정할 최대 도메인 개수
+  - 응답: 성공 메시지
 
-- 메소드: DELETE
-- 설명: 기존 API 키를 삭제합니다.
-- 요청 데이터: DeleteApiKeyData
-    - secret (str): 관리자 비밀번호
-    - api_key (str): 삭제할 API 키
-- 응답
-    - message (str): 상태 메세지
+### 12. 도메인 추가
+- PUT `/admin/add_domain`
+  - 설명: 새로운 도메인을 추가합니다.
+  - 헤더: `api_key`, `secret` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
+  - 쿼리: `domain` (문자열) - (필수) 추가할 도메인명
+  - 응답: 성공 메시지
 
-### 10. /admin/set_max_domain_count
+### 13. 도메인 삭제
+- PUT `/admin/delete_domain`
+  - 설명: 등록된 도메인을 삭제합니다.
+  - 헤더: `api_key`, `secret` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
+  - 쿼리: `domain` (문자열) - (필수) 삭제할 도메인명
+  - 응답: 성공 메시지
 
-- 메소드: PUT
-- 설명: 도메인 개수를 제한합니다.
-- 요청 데이터: AdminRequestDataInt
-    - api_key (str): 관리자 API 키
-    - secret (str): 관리자 비밀번호
-    - int (int): 최대 도메인 개수
-- 응답
-    - message (str): 상태 메세지
-
-### 11. /admin/add_domain
-
-- 메소드: PUT
-- 설명: 도메인을 추가합니다.
-- 요청 데이터: AdminRequestDataStr
-    - api_key (str): 관리자 API 키
-    - secret (str): 관리자 비밀번호
-    - str (str): 추가할 도메인
-- 응답
-    - message (str): 상태 메세지
-
-### 12. /admin/delete_domain
-
-- 메소드: PUT
-- 설명: 기존 도메인을 삭제합니다.
-- 요청 데이터: AdminRequestDataStr
-    - api_key (str): 관리자 API 키
-    - secret (str): 관리자 비밀번호
-    - str (str): 삭제할 도메인
-- 응답
-    - message (str): 상태 메세지
-
-### 13. /admin/set_subscribed
-
-- 메소드: PUT
-- 설명: 구독 상태를 설정합니다.
-- 요청 데이터: AdminRequestDataInt
-    - api_key (str): 관리자 API 키
-    - secret (str): 관리자 비밀번호
-    - int (int): 구독 상태
-- 응답
-    - message (str): 상태 메세지
+### 14. 구독 상태 설정
+- PUT `/admin/set_subscribed`
+  - 설명: 사용자의 구독 상태를 설정합니다.
+  - 헤더: `api_key`, `secret` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
+  - 쿼리: `subscribe_status` (정수) - (필수) 설정할 구독 상태
+  - 응답: 성공 메시지
