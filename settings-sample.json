@@ -1,0 +1,26 @@
+{
+    "secret": "어드민 인증을 위한 시크릿 키",
+    "openai_api_key": "OpenAI API 키",
+    "openai_chat_model": "gpt-4o-mini",
+    "api_key_prefix": "cb_",
+    "mysql_config": {
+        "user": "DB 유저",
+        "password": "DB 비밀번호",
+        "host": "localhost:3306",
+        "database": "DB 이름"
+    },
+    "schema": {
+        "openapi": "3.0.2",
+        "info": {
+            "title": "Candy AI Writer API",
+            "version": "0.1",
+            "description": "Candy AI Writer 워드프레스 플러그인을 사용하기 위한 API입니다."
+        },
+        "servers": [
+            {
+                "url": "https://api.edix.studio",
+                "description": "API Server"
+            }
+        ]
+    }
+}
