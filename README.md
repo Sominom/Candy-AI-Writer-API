@@ -15,6 +15,11 @@ chmod +x ./*.sh
 deactivate
 ```
 
+### 초기 설정
+```
+settings-sample.json 파일을 settings.json으로 복사하고, 필요한 설정을 수정하세요.
+```
+
 ### 실행
 ```
 ./start.sh
