@@ -1,0 +1,9 @@
+fastapi==0.115.4
+openai==1.52.2
+pydantic==2.9.2
+pytest==8.3.3
+pytz==2022.1
+Requests==2.32.3
+SQLAlchemy==2.0.36
+tiktoken==0.8.0
+uvicorn==0.32.0
