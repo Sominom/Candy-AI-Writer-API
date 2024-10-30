@@ -1,114 +1,129 @@
-import token  
-import traceback  
-from typing import AsyncGenerator  
-from urllib import response  
-from uvicorn.config import logger as log  
-from fastapi.responses import JSONResponse, StreamingResponse  
-from fastapi import HTTPException, APIRouter, Request  
-from App.services.api_key_service import APIKeyService  
-from App.services.openai_service import OpenAIService  
-from App.utils.executor import Executor  
-from App.data.settings import Settings  
-import tiktoken  
+import token
+import traceback
+from typing import AsyncGenerator
+from urllib import response
+from uvicorn.config import logger as log
+from fastapi.responses import JSONResponse, StreamingResponse # type: ignore
+from fastapi import HTTPException, APIRouter, Request # type: ignore
+from App.services.api_key_service import APIKeyService
+from App.services.openai_service import OpenAIService
+from App.utils.executor import Executor
+from App.data.settings import Settings
+import tiktoken # type: ignore
 
-settings = Settings.get_instance()  
-encoding = tiktoken.encoding_for_model(settings.openai_chat_model)  
+settings = Settings.get_instance()
+encoding = tiktoken.encoding_for_model(settings.openai_chat_model)
 
-executor = Executor.get_instance()  
-router = APIRouter()  
+executor = Executor.get_instance()
+router = APIRouter()
 
-openai_service = OpenAIService()  
-api_key_service = APIKeyService()  
+openai_service = OpenAIService()
+api_key_service = APIKeyService()
 
-def token_to_credit_calculater(prompt: str) -> int:  
-    token = len(encoding.encode(prompt))  
-    price = int(token / 10)  
-    return price  
 
-async def generator_wrapper(generator, input_message, api_key) -> AsyncGenerator[str, None]:  
-    output_message = ""  
-    async for message in generator:  
-        output_message += message  
-        yield message  
+def token_to_credits_calculater(prompt: str) -> int:
+    token = len(encoding.encode(prompt))
+    price = int(token / 10)
+    return price
 
-    total_credits = token_to_credit_calculater(input_message + output_message)  
-    api_key_service.decrement_credit(api_key, total_credits)  
 
-@router.post("/complete")  
-async def complete_router(request: Request):  
-    try:  
-        api_key = request.headers.get("api_key")  
-        if not api_key:  
-            raise HTTPException(status_code=400, detail="API key is missing in headers")  
+async def generator_wrapper(
+    generator, input_message, api_key
+) -> AsyncGenerator[str, None]:
+    output_message = ""
+    async for message in generator:
+        output_message += message
+        yield message
 
-        body = await request.json()  
-        prompt = body.get("prompt")  
-        reference = body.get("reference", "")  
+    total_credits = token_to_credits_calculater(input_message + output_message)
+    api_key_service.decrement_credits(api_key, total_credits)
 
-        if not api_key_service.check_credit(api_key, token_to_credit_calculater(prompt)):  
-            return JSONResponse(content={"message": "Unauthorized"}, status_code=401)  
 
-        complete_generator = openai_service.complete(prompt, reference)  
-        
-        return StreamingResponse(  
-            content=generator_wrapper(complete_generator, prompt, api_key),  
-            media_type="text/plain"  
-        )  
+@router.post("/complete")
+async def complete_router(request: Request):
+    try:
+        api_key = request.headers.get("api_key")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="API key is missing in headers")
 
-    except Exception:  
-        log.error(traceback.format_exc())  
-        return JSONResponse(  
-            content={"message": "Internal server error"}, status_code=500  
-        )  
+        body = await request.json()
+        prompt = body.get("prompt")
+        reference = body.get("reference", "")
 
-@router.post("/enhance")  
-async def enhance_router(request: Request):  
-    try:  
-        api_key = request.headers.get("api_key")  
-        if not api_key:  
-            raise HTTPException(status_code=400, detail="API key is missing in headers")  
+        if not api_key_service.check_credits(
+            api_key, token_to_credits_calculater(prompt)
+        ):
+            return JSONResponse(content={"message": "Unauthorized"}, status_code=401)
 
-        body = await request.json()  
-        prompt = body.get("prompt")  
+        complete_generator = openai_service.complete(prompt, reference)
 
-        if not api_key_service.check_credit(api_key, token_to_credit_calculater(prompt)):  
-            return JSONResponse(content={"message": "Unauthorized"}, status_code=401)  
+        return StreamingResponse(
+            content=generator_wrapper(complete_generator, prompt, api_key),
+            media_type="text/plain",
+        )
 
-        enhance_str = await openai_service.enhance(prompt)  
-        
-        total_token = token_to_credit_calculater(prompt + enhance_str)  
-        
-        api_key_service.decrement_credit(api_key, total_token)  
+    except Exception:
+        log.error(traceback.format_exc())
+        return JSONResponse(
+            content={"message": "Internal server error"}, status_code=500
+        )
 
-        return JSONResponse(content={"message": enhance_str}, status_code=200)  
 
-    except Exception:  
-        log.error(traceback.format_exc())  
-        return JSONResponse(  
-            content={"message": "Internal server error"}, status_code=500  
-        )  
+@router.post("/enhance")
+async def enhance_router(request: Request):
+    try:
+        api_key = request.headers.get("api_key")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="API key is missing in headers")
 
-@router.post("/create")  
-async def create_router(request: Request):  
-    try:  
-        api_key = request.headers.get("api_key")  
-        if not api_key:  
-            raise HTTPException(status_code=400, detail="API key is missing in headers")  
+        body = await request.json()
+        prompt = body.get("prompt")
 
-        body = await request.json()  
-        prompt = body.get("prompt")  
+        if not api_key_service.check_credits(
+            api_key, token_to_credits_calculater(prompt)
+        ):
+            return JSONResponse(content={"message": "Unauthorized"}, status_code=401)
 
-        if not api_key_service.check_credit(api_key, token_to_credit_calculater(prompt)):  
-            return JSONResponse(content={"message": "Unauthorized"}, status_code=401)  
+        enhance_str = await openai_service.enhance(prompt)
 
-        html_str = await openai_service.create(prompt)  
-        
-        total_token = token_to_credit_calculater(prompt + html_str)  
-        
-        api_key_service.decrement_credit(api_key, total_token)  
+        total_token = token_to_credits_calculater(prompt + enhance_str)
 
-        return JSONResponse(content={"message": html_str}, status_code=200)  
+        api_key_service.decrement_credits(api_key, total_token)
 
-    except Exception:  
-        log.error(traceback.format_exc())  
-        return JSONResponse(content={"message": "Internal server error"}, status_code=500)
+        return JSONResponse(content={"message": enhance_str}, status_code=200)
+
+    except Exception:
+        log.error(traceback.format_exc())
+        return JSONResponse(
+            content={"message": "Internal server error"}, status_code=500
+        )
+
+
+@router.post("/create")
+async def create_router(request: Request):
+    try:
+        api_key = request.headers.get("api_key")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="API key is missing in headers")
+
+        body = await request.json()
+        prompt = body.get("prompt")
+
+        if not api_key_service.check_credits(
+            api_key, token_to_credits_calculater(prompt)
+        ):
+            return JSONResponse(content={"message": "Unauthorized"}, status_code=401)
+
+        html_str = await openai_service.create(prompt)
+
+        total_token = token_to_credits_calculater(prompt + html_str)
+
+        api_key_service.decrement_credits(api_key, total_token)
+
+        return JSONResponse(content={"message": html_str}, status_code=200)
+
+    except Exception:
+        log.error(traceback.format_exc())
+        return JSONResponse(
+            content={"message": "Internal server error"}, status_code=500
+        )

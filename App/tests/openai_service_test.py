@@ -1,6 +1,6 @@
 import json
 from typing import AsyncGenerator
-import pytest
+import pytest # type: ignore
 from App.utils.conn import Base
 from App.services.api_key_service import APIKeyService
 from App.services.openai_service import OpenAIService
@@ -18,7 +18,7 @@ class TestOpenAIService:
         self.test_api_key: str = APIKeyService.generate_api_key(14, settings.secret)
         
         # 크레딧 충전
-        self.api_key_service.increment_credit(self.test_api_key, 3000)
+        self.api_key_service.increment_credits(self.test_api_key, 3000)
 
         # 테스트 종료 시 API 키 삭제
         def teardown():

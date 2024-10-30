@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 import string
 import secrets
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError # type: ignore
+from sqlalchemy.orm import Session # type: ignore
 from contextlib import contextmanager
 import pytz
 
@@ -63,10 +63,10 @@ class APIKeyService:
         with self._create_session() as session:
             return bool(self._get_api_key(api_key, session))
 
-    def check_credit(self, api_key: str, credit: int = 1) -> bool:
+    def check_credits(self, api_key: str, credits: int = 1) -> bool:
         with self._create_session() as session:
             api_key_obj = self._get_api_key(api_key, session)
-            return api_key_obj.credits >= credit if api_key_obj else False
+            return api_key_obj.credits >= credits if api_key_obj else False
 
     def modify_expiration(self, days: int, secret: str, api_key: str):
         if not self._validate_secret(secret):
@@ -170,24 +170,24 @@ class APIKeyService:
 
             api_key_obj.is_subscribed = bool(is_subscribed)
 
-    def increment_credit(self, api_key: str, credit: int):
+    def increment_credits(self, api_key: str, credits: int):
         with self._create_session() as session:
             api_key_obj = self._get_api_key(api_key, session)
             if not api_key_obj:
                 raise ValueError("APIKey not found")
-            api_key_obj.credits += credit
+            api_key_obj.credits += credits
             return api_key_obj.credits
 
-    def decrement_credit(self, api_key: str, credit: int):
+    def decrement_credits(self, api_key: str, credits: int):
         with self._create_session() as session:
             api_key_obj = self._get_api_key(api_key, session)
             if not api_key_obj:
                 raise ValueError("APIKey not found")
 
-            if api_key_obj.credits < credit:
+            if api_key_obj.credits < credits:
                 api_key_obj.credits = 0
             else:
-                api_key_obj.credits -= credit
+                api_key_obj.credits -= credits
 
     def get_expiration_date(self, api_key: str) -> datetime:
         with self._create_session() as session:

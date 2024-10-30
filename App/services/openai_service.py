@@ -4,7 +4,7 @@ from App.utils.openai_functions import openai_functions
 from App.utils.executor import Executor
 from App.data.settings import Settings
 from App.data.prompts import *
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI # type: ignore
 import traceback
 import re
 import asyncio

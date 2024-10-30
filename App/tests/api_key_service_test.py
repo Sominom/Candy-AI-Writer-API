@@ -1,5 +1,5 @@
 import json
-import pytest
+import pytest # type: ignore
 from App.utils.conn import Base
 from App.services.api_key_service import APIKeyService
 from App.data.settings import Settings
@@ -28,46 +28,46 @@ class TestAPIKeyService:
         assert self.test_api_key
 
     # 크레딧 충전
-    def test_credit_increment(self):
-        increment_credit = 1000
-        decrement_credit = 10
+    def test_credits_increment(self):
+        increment_credits = 1000
+        decrement_credits = 10
 
         before_increment = self.api_key_service.get_credits(self.test_api_key)
 
-        self.api_key_service.increment_credit(self.test_api_key, increment_credit)
+        self.api_key_service.increment_credits(self.test_api_key, increment_credits)
 
         after_increment = self.api_key_service.get_credits(self.test_api_key)
         print(
-            f"크레딧 증가 - before_credit: {before_increment}, after_credit: {after_increment}"
+            f"크레딧 증가 - before_credits: {before_increment}, after_credits: {after_increment}"
         )
 
-        self.api_key_service.decrement_credit(self.test_api_key, decrement_credit)
+        self.api_key_service.decrement_credits(self.test_api_key, decrement_credits)
 
         after_decrement = self.api_key_service.get_credits(self.test_api_key)
 
         print(
-            f"크레딧 감소 - before_credit: {after_increment}, after_credit: {after_decrement}"
+            f"크레딧 감소 - before_credits: {after_increment}, after_credits: {after_decrement}"
         )
 
-        assert before_increment + increment_credit - decrement_credit == after_decrement
+        assert before_increment + increment_credits - decrement_credits == after_decrement
 
     # 크레딧 확인
-    def test_check_credit1(self):
-        credit = 1000
+    def test_check_credits1(self):
+        credits = 1000
 
         api_key = self.test_api_key
-        result = self.api_key_service.check_credit(api_key, credit)
+        result = self.api_key_service.check_credits(api_key, credits)
 
         # 크레딧이 모자라서 False가 나와야 함
         assert result == False
 
     # 크레딧 확인
-    async def test_check_credit2(self):
-        increment_credit = 1000
-        self.api_key_service.increment_credit(self.test_api_key, increment_credit)
-        credit = 100
+    async def test_check_credits2(self):
+        increment_credits = 1000
+        self.api_key_service.increment_credits(self.test_api_key, increment_credits)
+        credits = 100
         api_key = self.test_api_key
-        result = self.api_key_service.check_credit(api_key, credit)
+        result = self.api_key_service.check_credits(api_key, credits)
         assert result == True
 
     # 도메인 추가
