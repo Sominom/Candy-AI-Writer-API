@@ -76,7 +76,7 @@ tail -f server.log
   - 응답: 도메인 리스트
 
 ### 6. 크레딧 확인
-- POST `/get_credits`
+- GET `/get_credits`
   - 설명: 사용 가능한 크레딧을 반환합니다.
   - 헤더: `api_key`: (필수) 사용자의 API 키
   - 응답: 사용 가능한 크레딧
@@ -99,7 +99,7 @@ tail -f server.log
 ### 9. API 키 연장
 - PUT `/admin/extend_api_key`
   - 설명: 기존 API 키의 만료 날짜를 연장합니다.
-  - 헤더: `secret`: (필수) 관리자 비밀키
+  - 헤더: `secret`, `api_key` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
   - 쿼리:
     - `days` (정수) - (필수) 연장할 일수
     - `api_key` (문자열) - (필수) 연장할 API 키
@@ -108,34 +108,41 @@ tail -f server.log
 ### 10. API 키 삭제
 - DELETE `/admin/delete_api_key`
   - 설명: API 키를 삭제합니다.
-  - 헤더: `secret`: (필수) 관리자 비밀키
+  - 헤더: `secret`, `api_key` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
   - 쿼리: `api_key` (문자열) - (필수) 삭제할 API 키
   - 응답: 성공 메시지
 
 ### 11. 최대 도메인 개수 설정
 - PUT `/admin/set_max_domain_count`
   - 설명: API 키에 대한 최대 도메인 개수를 설정합니다.
-  - 헤더: `api_key`, `secret` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
+  - 헤더: `secret`, `api_key` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
   - 쿼리: `count` (정수) - (필수) 설정할 최대 도메인 개수
   - 응답: 성공 메시지
 
 ### 12. 도메인 추가
 - PUT `/admin/add_domain`
   - 설명: 새로운 도메인을 추가합니다.
-  - 헤더: `api_key`, `secret` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
+  - 헤더: `secret`, `api_key` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
   - 쿼리: `domain` (문자열) - (필수) 추가할 도메인명
   - 응답: 성공 메시지
 
 ### 13. 도메인 삭제
 - PUT `/admin/delete_domain`
   - 설명: 등록된 도메인을 삭제합니다.
-  - 헤더: `api_key`, `secret` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
+  - 헤더: `secret`, `api_key` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
   - 쿼리: `domain` (문자열) - (필수) 삭제할 도메인명
   - 응답: 성공 메시지
 
 ### 14. 구독 상태 설정
 - PUT `/admin/set_subscribed`
   - 설명: 사용자의 구독 상태를 설정합니다.
-  - 헤더: `api_key`, `secret` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
-  - 쿼리: `subscribe_status` (정수) - (필수) 설정할 구독 상태
+  - 헤더: `secret`, `api_key` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
+  - 쿼리: `status` (정수) - (필수) 설정할 구독 상태
+  - 응답: 성공 메시지
+
+### 15. 크레딧 추가
+- PUT `/admin/add_credits`
+  - 설명: 사용자의 크레딧을 추가합니다.
+  - 헤더: `secret`, `api_key` (둘 다 필수) 사용자의 API 키 및 관리자 비밀키
+  - 쿼리: `credits` (정수) - (필수) 추가할 크레딧
   - 응답: 성공 메시지
