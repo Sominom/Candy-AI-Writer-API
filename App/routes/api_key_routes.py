@@ -1,3 +1,4 @@
+from multiprocessing import Value
 import traceback
 import logging
 from App.services.api_key_service import APIKeyService
@@ -16,7 +17,7 @@ async def is_subscribed(request: Request):
     try:
         api_key = request.headers.get("api_key")
         if not api_key:
-            raise HTTPException(status_code=400, detail="API key is missing in headers")
+            raise ValueError("API key is missing in headers")
         result = api_key_service.is_subscribed(api_key)
         return JSONResponse(
             content={"message": "Subscription status retrieved", "subscribed": result}
@@ -36,7 +37,7 @@ async def get_domain_list(request: Request):
     try:
         api_key = request.headers.get("api_key")
         if not api_key:
-            raise HTTPException(status_code=400, detail="API key is missing in headers")
+            raise ValueError("API key is missing in headers")
         result = api_key_service.get_domain_list(api_key)
         return JSONResponse(
             content={
@@ -59,7 +60,7 @@ async def get_credits(request: Request):
     try:
         api_key = request.headers.get("api_key")
         if not api_key:
-            raise HTTPException(status_code=400, detail="API key is missing in headers")
+            raise ValueError("API key is missing in headers")
         credits = api_key_service.get_credits(api_key)
         return JSONResponse(
             content={"message": "Credits retrieved successfully", "credits": credits}
@@ -79,7 +80,7 @@ async def get_expiration_date(request: Request):
     try:
         api_key = request.headers.get("api_key")
         if not api_key:
-            raise HTTPException(status_code=400, detail="API key is missing in headers")
+            raise ValueError("API key is missing in headers")
         expiration_date = api_key_service.get_expiration_date(api_key)
         return JSONResponse(
             content={
@@ -102,9 +103,7 @@ async def generate_api_key(request: Request, body: DaysDTO):
     try:
         secret = request.headers.get("secret")
         if not secret:
-            raise HTTPException(
-                status_code=400, detail="Admin secret is missing in headers"
-            )
+            raise ValueError("Secret is missing in headers")
         api_key = api_key_service.generate_api_key(body.days, secret)
         return JSONResponse(
             content={"api_key": api_key, "message": "API key generated successfully"}
@@ -125,9 +124,7 @@ async def extend_api_key(request: Request, body: DaysDTO):
         api_key = request.headers.get("api_key")
         secret = request.headers.get("secret")
         if not secret:
-            raise HTTPException(
-                status_code=400, detail="Admin secret is missing in headers"
-            )
+            raise ValueError("Secret is missing in headers")
         api_key_service.modify_expiration(body.days, secret, api_key)
         return JSONResponse(content={"message": "API key extended successfully"})
     except ValueError as e:
@@ -146,9 +143,7 @@ async def delete_user(request: Request):
         api_key = request.headers.get("api_key")
         secret = request.headers.get("secret")
         if not secret:
-            raise HTTPException(
-                status_code=400, detail="Admin secret is missing in headers"
-            )
+            raise ValueError("Secret is missing in headers")
         api_key_service.delete_api_key(secret, api_key)
         return JSONResponse(content={"message": "API key deleted successfully"})
     except ValueError as e:
@@ -167,9 +162,7 @@ async def set_max_domain_count(request: Request, body: DomainCountDTO):
         api_key = request.headers.get("api_key")
         secret = request.headers.get("secret")
         if not api_key or not secret:
-            raise HTTPException(
-                status_code=400, detail="API key or secret is missing in headers"
-            )
+            raise ValueError("API key or secret is missing in headers")
         api_key_service.set_max_domain_count(api_key, secret, body.count)
         return JSONResponse(
             content={"message": "Maximum domain count set successfully"}
@@ -190,9 +183,7 @@ async def add_domain(request: Request, body: DomainDTO):
         api_key = request.headers.get("api_key")
         secret = request.headers.get("secret")
         if not api_key or not secret:
-            raise HTTPException(
-                status_code=400, detail="API key or secret is missing in headers"
-            )
+            raise ValueError("API key or secret is missing in headers")
         api_key_service.add_domain(api_key, secret, body.domain)
         return JSONResponse(content={"message": "Domain added successfully"})
     except ValueError as e:
@@ -211,9 +202,7 @@ async def delete_domain(request: Request, body: DomainDTO):
         api_key = request.headers.get("api_key")
         secret = request.headers.get("secret")
         if not api_key or not secret:
-            raise HTTPException(
-                status_code=400, detail="API key or secret is missing in headers"
-            )
+            raise ValueError("API key or secret is missing in headers")
         api_key_service.delete_domain(api_key, secret, body.domain)
         return JSONResponse(content={"message": "Domain deleted successfully"})
     except ValueError as e:
@@ -232,9 +221,7 @@ async def set_subscribed(request: Request, body: StatusDTO):
         api_key = request.headers.get("api_key")
         secret = request.headers.get("secret")
         if not api_key or not secret:
-            raise HTTPException(
-                status_code=400, detail="API key or secret is missing in headers"
-            )
+            raise ValueError("API key or secret is missing in headers")
         api_key_service.set_subscribed(api_key, secret, body.status)
         return JSONResponse(
             content={"message": "Subscription status updated successfully"}
@@ -255,9 +242,7 @@ async def increment_credits(request: Request, body: CreditsDTO):
         api_key = request.headers.get("api_key")
         secret = request.headers.get("secret")
         if not api_key or not secret:
-            raise HTTPException(
-                status_code=400, detail="API key or secret is missing in headers"
-            )
+            raise ValueError("API key or secret is missing in headers")
         api_key_service.increment_credits(api_key, body.credits)
         return JSONResponse(content={"message": "Credits incremented successfully"})
     except ValueError as e:
