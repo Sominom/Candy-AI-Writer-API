@@ -14,3 +14,7 @@ class StatusDTO(BaseModel):
     
 class CreditsDTO(BaseModel):  
     credits: int 
+    
+class OpenAIRequestDTO(BaseModel):
+    prompt: str
+    reference: str = ""

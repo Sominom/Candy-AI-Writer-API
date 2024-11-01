@@ -1,5 +1,6 @@
 from turtle import st
 from typing import AsyncGenerator
+from uvicorn.config import logger as log
 from App.utils.openai_functions import openai_functions
 from App.utils.executor import Executor
 from App.data.settings import Settings
@@ -10,11 +11,10 @@ import re
 import asyncio
 import json
 
+
 executor = Executor.get_instance()
 settings = Settings.get_instance()
 
-end_flag = "<END>"
-error_flag = "<ERROR>"
 
 class OpenAIService:
     
@@ -41,7 +41,6 @@ class OpenAIService:
         max_tokens = 500
         # stop = [". "]
         
-        is_function = False
         try:
             response = await self.openai_client.chat.completions.create(
                 model=model,
@@ -61,13 +60,11 @@ class OpenAIService:
                     yield message
                     
                 if choice.delta.function_call:
-                    is_function = True
                     yield choice.delta.function_call.arguments
                     
-            if not is_function:
-                yield end_flag
-        except Exception as e:
-            yield error_flag
+        except Exception:
+            log.error(traceback.format_exc())
+            
 
     async def complete(self, prompt: str, reference: str = "") -> AsyncGenerator[str, None]:
         prompt = self.clean_text(prompt)

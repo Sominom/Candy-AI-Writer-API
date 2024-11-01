@@ -7,14 +7,13 @@ from fastapi.responses import JSONResponse, StreamingResponse # type: ignore
 from fastapi import HTTPException, APIRouter, Request # type: ignore
 from App.services.api_key_service import APIKeyService
 from App.services.openai_service import OpenAIService
-from App.utils.executor import Executor
 from App.data.settings import Settings
+from App.data.dtos import OpenAIRequestDTO
 import tiktoken # type: ignore
 
 settings = Settings.get_instance()
 encoding = tiktoken.encoding_for_model(settings.openai_chat_model)
 
-executor = Executor.get_instance()
 router = APIRouter()
 
 openai_service = OpenAIService()
@@ -37,28 +36,24 @@ async def generator_wrapper(
 
     total_credits = token_to_credits_calculater(input_message + output_message)
     api_key_service.decrement_credits(api_key, total_credits)
-
+    
 
 @router.post("/complete")
-async def complete_router(request: Request):
+async def complete_router(request: Request, body: OpenAIRequestDTO):
     try:
         api_key = request.headers.get("api_key")
         if not api_key:
             raise HTTPException(status_code=400, detail="API key is missing in headers")
 
-        body = await request.json()
-        prompt = body.get("prompt")
-        reference = body.get("reference", "")
-
         if not api_key_service.check_credits(
-            api_key, token_to_credits_calculater(prompt)
+            api_key, token_to_credits_calculater(body.prompt)
         ):
             return JSONResponse(content={"message": "Unauthorized"}, status_code=401)
 
-        complete_generator = openai_service.complete(prompt, reference)
+        complete_generator = openai_service.complete(body.prompt, body.reference)
 
         return StreamingResponse(
-            content=generator_wrapper(complete_generator, prompt, api_key),
+            content=generator_wrapper(complete_generator, body.prompt, api_key),
             media_type="text/plain",
         )
 
@@ -70,23 +65,20 @@ async def complete_router(request: Request):
 
 
 @router.post("/enhance")
-async def enhance_router(request: Request):
+async def enhance_router(request: Request, body: OpenAIRequestDTO):
     try:
         api_key = request.headers.get("api_key")
         if not api_key:
             raise HTTPException(status_code=400, detail="API key is missing in headers")
 
-        body = await request.json()
-        prompt = body.get("prompt")
-
         if not api_key_service.check_credits(
-            api_key, token_to_credits_calculater(prompt)
+            api_key, token_to_credits_calculater(body.prompt)
         ):
             return JSONResponse(content={"message": "Unauthorized"}, status_code=401)
 
-        enhance_str = await openai_service.enhance(prompt)
+        enhance_str = await openai_service.enhance(body.prompt, body.reference)
 
-        total_token = token_to_credits_calculater(prompt + enhance_str)
+        total_token = token_to_credits_calculater(body.prompt + enhance_str)
 
         api_key_service.decrement_credits(api_key, total_token)
 
@@ -100,23 +92,20 @@ async def enhance_router(request: Request):
 
 
 @router.post("/create")
-async def create_router(request: Request):
+async def create_router(request: Request, body: OpenAIRequestDTO):
     try:
         api_key = request.headers.get("api_key")
         if not api_key:
             raise HTTPException(status_code=400, detail="API key is missing in headers")
 
-        body = await request.json()
-        prompt = body.get("prompt")
-
         if not api_key_service.check_credits(
-            api_key, token_to_credits_calculater(prompt)
+            api_key, token_to_credits_calculater(body.prompt)
         ):
             return JSONResponse(content={"message": "Unauthorized"}, status_code=401)
 
-        html_str = await openai_service.create(prompt)
+        html_str = await openai_service.create(body.prompt, body.reference)
 
-        total_token = token_to_credits_calculater(prompt + html_str)
+        total_token = token_to_credits_calculater(body.prompt + html_str)
 
         api_key_service.decrement_credits(api_key, total_token)
 
