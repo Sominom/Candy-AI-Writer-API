@@ -17,7 +17,7 @@ deactivate
 
 ### 초기 설정
 ```
-settings-sample.json 파일을 settings.json으로 복사하고, 필요한 설정을 수정하세요.
+settings-sample.json 파일을 settings.json으로 복사하고 데이터베이스, OpenAI API 키 설정 등을 수정하세요.
 ```
 
 ### 실행
