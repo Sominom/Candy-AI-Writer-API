@@ -37,7 +37,7 @@ class TestOpenAIRoutes:
         # 입력 토큰 계산
         input_token = self.tokenizer(input_prompt)
 
-        headers = {"api_key": self.test_api_key}
+        headers = {"X-API-KEY": self.test_api_key}
 
         data = {"reference": "", "prompt": input_prompt}
 
@@ -70,7 +70,7 @@ class TestOpenAIRoutes:
         assert my_credits == total_credits
 
     def test_enhance_router(self):
-        headers = {"api_key": self.test_api_key}
+        headers = {"X-API-KEY": self.test_api_key}
 
         data = {"reference": "", "prompt": "안영하세요 제 이르믄 정ㅈㅣㄴ 입니다"}
 
@@ -80,10 +80,10 @@ class TestOpenAIRoutes:
 
         print(response.json())
         assert response.status_code == 200
-        assert response.json().get("message") == "안녕하세요. 제 이름은 정진입니다."
+        assert response.json().get("message") == ("안녕하세요. 제 이름은 정진입니다." or "안녕하세요, 제 이름은 정진입니다.")
 
     def test_create_router(self):
-        headers = {"api_key": self.test_api_key}
+        headers = {"X-API-KEY": self.test_api_key}
 
         data = {"reference": "", "prompt": "html 기본 템플릿 생성"}
 

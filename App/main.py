@@ -15,7 +15,7 @@ app.openapi_schema = settings.schema
 async def welcome():
     return {"message": "Welcome to Candebugger API"}
 
-@app.get("/openapi.json")
+@app.get("/docs")
 async def get_openapi_schema():
     return app.openapi_schema
 
@@ -28,7 +28,8 @@ app.add_middleware(
         "http://localhost",
         "https://localhost",
         "https://edix.studio",
-        "https://api.edix.studio"
+        "https://api.edix.studio",
+        "https://jin.edix.studio"
     ],
     allow_credentials=True,
     allow_methods=["*"],

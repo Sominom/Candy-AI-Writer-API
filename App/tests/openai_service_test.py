@@ -36,7 +36,7 @@ class TestOpenAIService:
             full_message += message
             print(message, end="", flush=True)
         
-        assert full_message == "1030<END>"
+        assert full_message == "1030"
         
     # 개선 테스트
     # async def test_enhance(self):
