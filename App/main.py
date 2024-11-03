@@ -13,11 +13,15 @@ app.openapi_schema = settings.schema
 
 @app.get("/")
 async def welcome():
-    return {"message": "Welcome to Candebugger API"}
+    return {"message": "Welcome"}
 
 @app.get("/docs")
 async def get_openapi_schema():
     return app.openapi_schema
+
+@app.get("robots.txt")
+async def get_robots():
+    return "User-agent: *\nDisallow: /"
 
 app.include_router(openai_routes.router) 
 app.include_router(api_key_routes.router)  
