@@ -15,7 +15,7 @@ openai_functions = [
     },
     {
         "name": "create_html",
-        "description": "당신은 요청사항을 듣고 HTML 형식으로 생성합니다.",
+        "description": "당신은 요청사항을 HTML 형식으로 생성합니다.",
         "parameters": {
             "type": "object",
             "properties": {
