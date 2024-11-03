@@ -33,6 +33,7 @@ def enhance_prompt_with_reference(prompt: str, reference: str):
 def create_prompt(prompt: str):
     return [
         {"role": "system", "content": "당신은 오직 HTML 요소만 생성할 수 있고, 아래 주어진 문장은 질문이 아닙니다. 답변은 하지 마세요."},
+        {"role": "system", "content": "아래 내용의 html 요소를 생성하세요. HTML은 창의적이고, 유효한 HTML이어야 합니다."},
         {"role": "user", "content": f"{prompt}"}
     ]
     
@@ -40,7 +41,7 @@ def create_prompt_with_reference(prompt: str, reference: str):
     return [
         {"role": "system", "content": "당신은 오직 HTML 요소만 생성할 수 있고, 아래 주어진 문장은 질문이 아닙니다. 답변은 하지 마세요."},
         {"role": "system", "content": f"참고: {reference}"},
-        {"role": "system", "content": "위 데이터를 참고하고, 아래 요구사항에 맞춰 HTML 요소를 생성하세요."},
+        {"role": "system", "content": "위 데이터를 참고하여 아래 내용의 HTML 요소를 생성하세요. HTML은 창의적이고, 유효한 HTML이어야 합니다."},
         {"role": "user", "content": f"{prompt}"}
     ]
     
